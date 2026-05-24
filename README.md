@@ -8,7 +8,8 @@
 ![Database](https://img.shields.io/badge/Database-MySQL-orange)
 
 ## 🚧 Development Progress
-- [x] Week 1 — Foundation & Backend API ← **Current**
+- [x] Week 1 — Foundation & Backend API ✅
+- [x] Day 2 — API Testing Complete ✅ ← **Current**
 - [ ] Week 2 — Frontend (React + Tailwind)
 - [ ] Week 3 — Advanced Features
 - [ ] Week 4 — Polish & Deploy
