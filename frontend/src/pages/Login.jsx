@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Heart, Loader2, Eye, EyeOff } from 'lucide-react';
 import toast from 'react-hot-toast';
 import API from '../api/axios';
-import { useAuth } from '../context/useAuth';
+import { useAuth } from "../context/AuthContext";
 
 function Login() {
   const [form, setForm] = useState({
