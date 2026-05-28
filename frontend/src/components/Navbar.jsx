@@ -1,8 +1,12 @@
-import { Link, useLocation } from 'react-router-dom';
-import { Heart, Users, UserCheck, Calendar } from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Heart, Users, UserCheck, Calendar, LogOut } from 'lucide-react';
+import toast from 'react-hot-toast';
+import { useAuth } from '../context/AuthContext';
 
 function Navbar() {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
 
   const links = [
     { to: '/', label: 'Dashboard', icon: Heart },
@@ -10,6 +14,12 @@ function Navbar() {
     { to: '/doctors', label: 'Doctors', icon: UserCheck },
     { to: '/appointments', label: 'Appointments', icon: Calendar },
   ];
+
+  const handleLogout = () => {
+    logout();
+    toast.success('Logged out successfully');
+    navigate('/login');
+  };
 
   return (
     <nav className="bg-blue-600 text-white shadow-lg">
@@ -32,6 +42,16 @@ function Navbar() {
                 <span className="text-sm font-medium">{label}</span>
               </Link>
             ))}
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="text-sm text-blue-200">👤 {user?.email}</span>
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-blue-700 text-sm"
+            >
+              <LogOut className="w-4 h-4" />
+              Logout
+            </button>
           </div>
         </div>
       </div>
