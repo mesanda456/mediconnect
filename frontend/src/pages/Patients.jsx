@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, Search, Trash2, Loader2, Pencil, X } from 'lucide-react';
+import { Plus, Search, Trash2, Loader2, Pencil, X, Users, Phone, Mail, Droplets } from 'lucide-react';
 import toast from 'react-hot-toast';
 import API from '../api/axios';
 
@@ -90,111 +90,211 @@ function Patients() {
     p.fullName?.toLowerCase().includes(search.toLowerCase())
   );
 
+  const getInitials = (name) => {
+    if (!name) return '?';
+    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+  };
+
+  const getAvatarColor = (name) => {
+    const colors = [
+      'bg-blue-500', 'bg-purple-500', 'bg-green-500',
+      'bg-orange-500', 'bg-pink-500', 'bg-teal-500'
+    ];
+    const index = (name?.charCodeAt(0) || 0) % colors.length;
+    return colors[index];
+  };
+
   return (
-    <div>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Patients</h1>
-        <button onClick={() => { handleCancel(); setShowForm(!showForm); }} className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+    <div className="space-y-6">
+
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Patients</h1>
+          <p className="text-gray-500 text-sm mt-1">{patients.length} total patients registered</p>
+        </div>
+        <button
+          onClick={() => { handleCancel(); setShowForm(!showForm); }}
+          className="flex items-center gap-2 bg-blue-600 text-white px-5 py-2.5 rounded-xl hover:bg-blue-700 shadow-sm transition-all hover:shadow-md font-medium"
+        >
           <Plus className="w-4 h-4" /> Add Patient
         </button>
       </div>
 
+      {/* Form */}
       {showForm && (
-        <div className="bg-white rounded-xl shadow p-6 mb-6 border-l-4 border-blue-500">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold">{editingId ? '✏️ Edit Patient' : '➕ New Patient'}</h2>
-            <button onClick={handleCancel} className="text-gray-400 hover:text-gray-600"><X className="w-5 h-5" /></button>
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 border-l-4 border-l-blue-500">
+          <div className="flex items-center justify-between mb-5">
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900">{editingId ? '✏️ Edit Patient' : '➕ New Patient'}</h2>
+              <p className="text-sm text-gray-400 mt-0.5">{editingId ? 'Update patient information' : 'Fill in the details below'}</p>
+            </div>
+            <button onClick={handleCancel} className="p-2 hover:bg-gray-100 rounded-lg text-gray-400 hover:text-gray-600 transition-colors">
+              <X className="w-5 h-5" />
+            </button>
           </div>
           <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="text-sm font-medium text-gray-700">Full Name *</label>
-              <input className="border rounded-lg p-2 w-full mt-1" placeholder="John Silva" value={form.fullName} onChange={e => setForm({...form, fullName: e.target.value})} required />
-            </div>
-            <div>
-              <label className="text-sm font-medium text-gray-700">Email *</label>
-              <input className="border rounded-lg p-2 w-full mt-1" placeholder="john@email.com" value={form.email} onChange={e => setForm({...form, email: e.target.value})} required disabled={!!editingId} />
-            </div>
-            <div>
-              <label className="text-sm font-medium text-gray-700">Phone</label>
-              <input className="border rounded-lg p-2 w-full mt-1" placeholder="0771234567" value={form.phone} onChange={e => setForm({...form, phone: e.target.value})} />
-            </div>
+            {[
+              { label: 'Full Name *', key: 'fullName', placeholder: 'John Silva', type: 'text' },
+              { label: 'Email *', key: 'email', placeholder: 'john@email.com', type: 'email', disabled: !!editingId },
+              { label: 'Phone', key: 'phone', placeholder: '0771234567', type: 'text' },
+              { label: 'Blood Group', key: 'bloodGroup', placeholder: 'A+', type: 'text' },
+              { label: 'Emergency Contact', key: 'emergencyContact', placeholder: '0779876543', type: 'text' },
+            ].map(({ label, key, placeholder, type, disabled }) => (
+              <div key={key}>
+                <label className="text-sm font-medium text-gray-700">{label}</label>
+                <input
+                  type={type}
+                  className="border border-gray-200 rounded-xl p-2.5 w-full mt-1 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-400"
+                  placeholder={placeholder}
+                  value={form[key]}
+                  onChange={e => setForm({...form, [key]: e.target.value})}
+                  disabled={disabled}
+                  required={label.includes('*')}
+                />
+              </div>
+            ))}
             <div>
               <label className="text-sm font-medium text-gray-700">Gender</label>
-              <select className="border rounded-lg p-2 w-full mt-1" value={form.gender} onChange={e => setForm({...form, gender: e.target.value})}>
+              <select
+                className="border border-gray-200 rounded-xl p-2.5 w-full mt-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={form.gender}
+                onChange={e => setForm({...form, gender: e.target.value})}
+              >
                 <option value="MALE">Male</option>
                 <option value="FEMALE">Female</option>
                 <option value="OTHER">Other</option>
               </select>
             </div>
-            <div>
-              <label className="text-sm font-medium text-gray-700">Blood Group</label>
-              <input className="border rounded-lg p-2 w-full mt-1" placeholder="A+" value={form.bloodGroup} onChange={e => setForm({...form, bloodGroup: e.target.value})} />
-            </div>
-            <div>
-              <label className="text-sm font-medium text-gray-700">Emergency Contact</label>
-              <input className="border rounded-lg p-2 w-full mt-1" placeholder="0779876543" value={form.emergencyContact} onChange={e => setForm({...form, emergencyContact: e.target.value})} />
-            </div>
             <div className="col-span-2">
               <label className="text-sm font-medium text-gray-700">Address</label>
-              <input className="border rounded-lg p-2 w-full mt-1" placeholder="123 Main St, Colombo" value={form.address} onChange={e => setForm({...form, address: e.target.value})} />
+              <input
+                className="border border-gray-200 rounded-xl p-2.5 w-full mt-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="123 Main St, Colombo"
+                value={form.address}
+                onChange={e => setForm({...form, address: e.target.value})}
+              />
             </div>
-            <div className="col-span-2 flex gap-2">
-              <button type="submit" disabled={saving} className="flex items-center gap-2 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50">
-                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+            <div className="col-span-2 flex gap-3 pt-2">
+              <button
+                type="submit"
+                disabled={saving}
+                className="flex items-center gap-2 bg-blue-600 text-white px-6 py-2.5 rounded-xl hover:bg-blue-700 disabled:opacity-50 font-medium transition-all"
+              >
+                {saving && <Loader2 className="w-4 h-4 animate-spin" />}
                 {saving ? 'Saving...' : editingId ? 'Update Patient' : 'Save Patient'}
               </button>
-              <button type="button" onClick={handleCancel} className="bg-gray-200 px-6 py-2 rounded-lg hover:bg-gray-300">Cancel</button>
+              <button type="button" onClick={handleCancel} className="bg-gray-100 text-gray-600 px-6 py-2.5 rounded-xl hover:bg-gray-200 font-medium transition-all">
+                Cancel
+              </button>
             </div>
           </form>
         </div>
       )}
 
-      <div className="bg-white rounded-xl shadow">
-        <div className="p-4 border-b">
+      {/* Search */}
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100">
+        <div className="p-4 border-b border-gray-100">
           <div className="relative">
-            <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
-            <input className="pl-9 border rounded-lg p-2 w-full" placeholder="Search patients..." value={search} onChange={e => setSearch(e.target.value)} />
+            <Search className="absolute left-3.5 top-3 w-4 h-4 text-gray-400" />
+            <input
+              className="pl-10 border border-gray-200 rounded-xl p-2.5 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="Search patients by name..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+            />
           </div>
         </div>
+
+        {/* Table */}
         {loading ? (
-          <div className="flex items-center justify-center py-12">
+          <div className="flex items-center justify-center py-16">
             <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
-            <span className="ml-2 text-gray-500">Loading patients...</span>
+            <span className="ml-3 text-gray-500">Loading patients...</span>
+          </div>
+        ) : filtered.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-16 text-gray-300">
+            <Users className="w-12 h-12 mb-3" />
+            <p className="text-gray-400 font-medium">No patients found</p>
+            <p className="text-sm text-gray-300 mt-1">Try a different search or add a new patient</p>
           </div>
         ) : (
           <table className="w-full">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="text-left p-4 text-sm font-medium text-gray-500">Name</th>
-                <th className="text-left p-4 text-sm font-medium text-gray-500">Email</th>
-                <th className="text-left p-4 text-sm font-medium text-gray-500">Phone</th>
-                <th className="text-left p-4 text-sm font-medium text-gray-500">Gender</th>
-                <th className="text-left p-4 text-sm font-medium text-gray-500">Blood</th>
-                <th className="text-left p-4 text-sm font-medium text-gray-500">Actions</th>
+            <thead>
+              <tr className="bg-gray-50">
+                <th className="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Patient</th>
+                <th className="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Contact</th>
+                <th className="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Gender</th>
+                <th className="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Blood</th>
+                <th className="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-gray-50">
               {filtered.map(p => (
-                <tr key={p.id} className="border-t hover:bg-gray-50">
-                  <td className="p-4 font-medium">{p.fullName}</td>
-                  <td className="p-4 text-gray-500">{p.email}</td>
-                  <td className="p-4 text-gray-500">{p.phone}</td>
-                  <td className="p-4"><span className="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs">{p.gender}</span></td>
-                  <td className="p-4"><span className="bg-red-100 text-red-700 px-2 py-1 rounded text-xs">{p.bloodGroup}</span></td>
-                  <td className="p-4 flex gap-2">
-                    <button onClick={() => handleEdit(p)} className="text-blue-500 hover:text-blue-700">
-                      <Pencil className="w-4 h-4" />
-                    </button>
-                    <button onClick={() => handleDelete(p.id)} className="text-red-500 hover:text-red-700">
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                <tr key={p.id} className="hover:bg-gray-50 transition-colors">
+                  <td className="p-4">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-9 h-9 rounded-full ${getAvatarColor(p.fullName)} flex items-center justify-center text-white text-xs font-bold`}>
+                        {getInitials(p.fullName)}
+                      </div>
+                      <div>
+                        <p className="font-semibold text-gray-800 text-sm">{p.fullName}</p>
+                        <p className="text-xs text-gray-400">ID #{p.id}</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="p-4">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                        <Mail className="w-3 h-3" /> {p.email}
+                      </div>
+                      {p.phone && (
+                        <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                          <Phone className="w-3 h-3" /> {p.phone}
+                        </div>
+                      )}
+                    </div>
+                  </td>
+                  <td className="p-4">
+                    <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${
+                      p.gender === 'MALE' ? 'bg-blue-50 text-blue-600' :
+                      p.gender === 'FEMALE' ? 'bg-pink-50 text-pink-600' :
+                      'bg-gray-50 text-gray-600'
+                    }`}>
+                      {p.gender}
+                    </span>
+                  </td>
+                  <td className="p-4">
+                    {p.bloodGroup ? (
+                      <div className="flex items-center gap-1.5">
+                        <Droplets className="w-3.5 h-3.5 text-red-500" />
+                        <span className="text-sm font-semibold text-red-600">{p.bloodGroup}</span>
+                      </div>
+                    ) : (
+                      <span className="text-gray-300 text-xs">—</span>
+                    )}
+                  </td>
+                  <td className="p-4">
+                    <div className="flex gap-1">
+                      <button
+                        onClick={() => handleEdit(p)}
+                        className="p-2 hover:bg-blue-50 rounded-lg text-gray-400 hover:text-blue-600 transition-colors"
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(p.id)}
+                        className="p-2 hover:bg-red-50 rounded-lg text-gray-400 hover:text-red-600 transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
         )}
-        {!loading && filtered.length === 0 && <p className="text-center text-gray-400 py-8">No patients found</p>}
       </div>
     </div>
   );
