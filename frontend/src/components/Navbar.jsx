@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Heart, Users, UserCheck, Calendar, LogOut } from 'lucide-react';
+import { Heart, Users, UserCheck, Calendar, LogOut, FileText } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 
@@ -13,6 +13,7 @@ function Navbar() {
     { to: '/patients', label: 'Patients', icon: Users },
     { to: '/doctors', label: 'Doctors', icon: UserCheck },
     { to: '/appointments', label: 'Appointments', icon: Calendar },
+    { to: '/medical-records', label: 'Records', icon: FileText },
   ];
 
   const handleLogout = () => {

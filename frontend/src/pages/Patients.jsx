@@ -73,7 +73,7 @@ function Patients() {
       setSaving(false);
     }
   };
-
+  
   const handleDelete = async (id) => {
     if (window.confirm('Delete this patient?')) {
       try {

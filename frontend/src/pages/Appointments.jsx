@@ -40,7 +40,11 @@ function Appointments() {
     }
   };
 
-  useEffect(() => { fetchAll(); }, []);
+  useEffect(() => {
+    // call fetchAll asynchronously to avoid setting state synchronously inside the effect
+    const load = async () => { await fetchAll(); };
+    load();
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
