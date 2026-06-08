@@ -6,6 +6,8 @@ import API from '../api/axios';
 function Patients() {
   const [patients, setPatients] = useState([]);
   const [search, setSearch] = useState('');
+  const [filterGender, setFilterGender] = useState('ALL');
+  const [filterBlood, setFilterBlood] = useState('ALL');
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -60,10 +62,10 @@ function Patients() {
       setSaving(true);
       if (editingId) {
         await API.put(`/patients/${editingId}`, form);
-        toast.success('Patient updated successfully! ✅');
+        toast.success('Patient updated! ✅');
       } else {
         await API.post('/patients', form);
-        toast.success('Patient added successfully! 🎉');
+        toast.success('Patient added! 🎉');
       }
       handleCancel();
       fetchPatients();
@@ -73,7 +75,7 @@ function Patients() {
       setSaving(false);
     }
   };
-  
+
   const handleDelete = async (id) => {
     if (window.confirm('Delete this patient?')) {
       try {
@@ -86,9 +88,13 @@ function Patients() {
     }
   };
 
-  const filtered = patients.filter(p =>
-    p.fullName?.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = patients.filter(p => {
+    const matchSearch = p.fullName?.toLowerCase().includes(search.toLowerCase()) ||
+                        p.email?.toLowerCase().includes(search.toLowerCase());
+    const matchGender = filterGender === 'ALL' || p.gender === filterGender;
+    const matchBlood = filterBlood === 'ALL' || p.bloodGroup === filterBlood;
+    return matchSearch && matchGender && matchBlood;
+  });
 
   const getInitials = (name) => {
     if (!name) return '?';
@@ -96,10 +102,7 @@ function Patients() {
   };
 
   const getAvatarColor = (name) => {
-    const colors = [
-      'bg-blue-500', 'bg-purple-500', 'bg-green-500',
-      'bg-orange-500', 'bg-pink-500', 'bg-teal-500'
-    ];
+    const colors = ['bg-blue-500', 'bg-purple-500', 'bg-green-500', 'bg-orange-500', 'bg-pink-500', 'bg-teal-500'];
     const index = (name?.charCodeAt(0) || 0) % colors.length;
     return colors[index];
   };
@@ -192,18 +195,62 @@ function Patients() {
         </div>
       )}
 
-      {/* Search */}
+      {/* Search & Filters */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100">
         <div className="p-4 border-b border-gray-100">
-          <div className="relative">
-            <Search className="absolute left-3.5 top-3 w-4 h-4 text-gray-400" />
-            <input
-              className="pl-10 border border-gray-200 rounded-xl p-2.5 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Search patients by name..."
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-            />
+          <div className="flex gap-3 flex-wrap">
+            <div className="relative flex-1 min-w-48">
+              <Search className="absolute left-3.5 top-3 w-4 h-4 text-gray-400" />
+              <input
+                className="pl-10 border border-gray-200 rounded-xl p-2.5 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Search by name or email..."
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+              />
+            </div>
+            <select
+              className="border border-gray-200 rounded-xl p-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm text-gray-600"
+              value={filterGender}
+              onChange={e => setFilterGender(e.target.value)}
+            >
+              <option value="ALL">All Genders</option>
+              <option value="MALE">Male</option>
+              <option value="FEMALE">Female</option>
+              <option value="OTHER">Other</option>
+            </select>
+            <select
+              className="border border-gray-200 rounded-xl p-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm text-gray-600"
+              value={filterBlood}
+              onChange={e => setFilterBlood(e.target.value)}
+            >
+              <option value="ALL">All Blood Groups</option>
+              <option value="A+">A+</option>
+              <option value="A-">A-</option>
+              <option value="B+">B+</option>
+              <option value="B-">B-</option>
+              <option value="O+">O+</option>
+              <option value="O-">O-</option>
+              <option value="AB+">AB+</option>
+              <option value="AB-">AB-</option>
+            </select>
+            {(search || filterGender !== 'ALL' || filterBlood !== 'ALL') && (
+              <button
+                onClick={() => { setSearch(''); setFilterGender('ALL'); setFilterBlood('ALL'); }}
+                className="px-4 py-2.5 bg-gray-100 text-gray-600 rounded-xl hover:bg-gray-200 text-sm font-medium"
+              >
+                Clear Filters
+              </button>
+            )}
           </div>
+        </div>
+
+        {/* Stats Row */}
+        <div className="px-4 py-3 border-b border-gray-50 flex gap-4">
+          <span className="text-xs text-gray-400">
+            Showing <span className="font-semibold text-gray-700">{filtered.length}</span> of <span className="font-semibold text-gray-700">{patients.length}</span> patients
+          </span>
+          {filterGender !== 'ALL' && <span className="text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full">Gender: {filterGender}</span>}
+          {filterBlood !== 'ALL' && <span className="text-xs bg-red-50 text-red-600 px-2 py-0.5 rounded-full">Blood: {filterBlood}</span>}
         </div>
 
         {/* Table */}
@@ -216,7 +263,7 @@ function Patients() {
           <div className="flex flex-col items-center justify-center py-16 text-gray-300">
             <Users className="w-12 h-12 mb-3" />
             <p className="text-gray-400 font-medium">No patients found</p>
-            <p className="text-sm text-gray-300 mt-1">Try a different search or add a new patient</p>
+            <p className="text-sm text-gray-300 mt-1">Try a different search or clear filters</p>
           </div>
         ) : (
           <table className="w-full">

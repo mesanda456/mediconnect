@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, Trash2, Loader2, X, Calendar, Clock, User, Stethoscope, FileText } from 'lucide-react';
+import { Plus, Trash2, Loader2, X, Calendar, Clock, Stethoscope, FileText, CheckCircle, XCircle, Check } from 'lucide-react';
 import toast from 'react-hot-toast';
 import API from '../api/axios';
 
@@ -10,6 +10,8 @@ function Appointments() {
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [filterStatus, setFilterStatus] = useState('ALL');
+  const [search, setSearch] = useState('');
 
   const emptyForm = {
     patient: { id: '' },
@@ -40,11 +42,7 @@ function Appointments() {
     }
   };
 
-  useEffect(() => {
-    // call fetchAll asynchronously to avoid setting state synchronously inside the effect
-    const load = async () => { await fetchAll(); };
-    load();
-  }, []);
+  useEffect(() => { fetchAll(); }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -55,7 +53,7 @@ function Appointments() {
     try {
       setSaving(true);
       await API.post('/appointments', form);
-      toast.success('Appointment booked successfully! 🎉');
+      toast.success('Appointment booked! 🎉');
       setShowForm(false);
       setForm(emptyForm);
       fetchAll();
@@ -66,6 +64,16 @@ function Appointments() {
     }
   };
 
+  const handleStatusUpdate = async (id, status) => {
+    try {
+      await API.patch(`/appointments/${id}/status?status=${status}`);
+      toast.success(`Appointment ${status.toLowerCase()}! ✅`);
+      fetchAll();
+    } catch (err) {
+      toast.error('Failed to update status');
+    }
+  };
+
   const handleCancel = async (id) => {
     if (window.confirm('Cancel this appointment?')) {
       try {
@@ -73,17 +81,17 @@ function Appointments() {
         toast.success('Appointment cancelled');
         fetchAll();
       } catch (err) {
-        toast.error('Failed to cancel appointment');
+        toast.error('Failed to cancel');
       }
     }
   };
 
   const statusConfig = (status) => {
     const map = {
-      PENDING:   { style: 'bg-amber-50 text-amber-600',   dot: 'bg-amber-400' },
+      PENDING:   { style: 'bg-amber-50 text-amber-600',    dot: 'bg-amber-400' },
       CONFIRMED: { style: 'bg-emerald-50 text-emerald-600', dot: 'bg-emerald-400' },
-      CANCELLED: { style: 'bg-red-50 text-red-500',       dot: 'bg-red-400' },
-      COMPLETED: { style: 'bg-blue-50 text-blue-600',     dot: 'bg-blue-400' },
+      CANCELLED: { style: 'bg-red-50 text-red-500',        dot: 'bg-red-400' },
+      COMPLETED: { style: 'bg-blue-50 text-blue-600',      dot: 'bg-blue-400' },
     };
     return map[status] || { style: 'bg-gray-50 text-gray-500', dot: 'bg-gray-400' };
   };
@@ -91,6 +99,22 @@ function Appointments() {
   const getInitials = (name) => {
     if (!name) return '?';
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+  };
+
+  const filtered = appointments.filter(a => {
+    const matchStatus = filterStatus === 'ALL' || a.status === filterStatus;
+    const matchSearch = search === '' ||
+      a.patient?.fullName?.toLowerCase().includes(search.toLowerCase()) ||
+      a.doctor?.fullName?.toLowerCase().includes(search.toLowerCase());
+    return matchStatus && matchSearch;
+  });
+
+  const counts = {
+    ALL: appointments.length,
+    PENDING: appointments.filter(a => a.status === 'PENDING').length,
+    CONFIRMED: appointments.filter(a => a.status === 'CONFIRMED').length,
+    COMPLETED: appointments.filter(a => a.status === 'COMPLETED').length,
+    CANCELLED: appointments.filter(a => a.status === 'CANCELLED').length,
   };
 
   return (
@@ -118,96 +142,81 @@ function Appointments() {
               <h2 className="text-lg font-semibold text-gray-900">📅 Book Appointment</h2>
               <p className="text-sm text-gray-400 mt-0.5">Fill in the appointment details</p>
             </div>
-            <button onClick={() => setShowForm(false)} className="p-2 hover:bg-gray-100 rounded-lg text-gray-400 hover:text-gray-600 transition-colors">
+            <button onClick={() => setShowForm(false)} className="p-2 hover:bg-gray-100 rounded-lg text-gray-400 hover:text-gray-600">
               <X className="w-5 h-5" />
             </button>
           </div>
-
           <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4">
             <div>
               <label className="text-sm font-medium text-gray-700">Patient *</label>
-              <select
-                className="border border-gray-200 rounded-xl p-2.5 w-full mt-1 focus:outline-none focus:ring-2 focus:ring-violet-500"
-                value={form.patient.id}
-                onChange={e => setForm({...form, patient: { id: e.target.value }})}
-                required
-              >
+              <select className="border border-gray-200 rounded-xl p-2.5 w-full mt-1 focus:outline-none focus:ring-2 focus:ring-violet-500" value={form.patient.id} onChange={e => setForm({...form, patient: { id: e.target.value }})} required>
                 <option value="">Select Patient</option>
                 {patients.map(p => <option key={p.id} value={p.id}>{p.fullName}</option>)}
               </select>
             </div>
-
             <div>
               <label className="text-sm font-medium text-gray-700">Doctor *</label>
-              <select
-                className="border border-gray-200 rounded-xl p-2.5 w-full mt-1 focus:outline-none focus:ring-2 focus:ring-violet-500"
-                value={form.doctor.id}
-                onChange={e => setForm({...form, doctor: { id: e.target.value }})}
-                required
-              >
+              <select className="border border-gray-200 rounded-xl p-2.5 w-full mt-1 focus:outline-none focus:ring-2 focus:ring-violet-500" value={form.doctor.id} onChange={e => setForm({...form, doctor: { id: e.target.value }})} required>
                 <option value="">Select Doctor</option>
                 {doctors.map(d => <option key={d.id} value={d.id}>{d.fullName} — {d.specialty}</option>)}
               </select>
             </div>
-
             <div>
               <label className="text-sm font-medium text-gray-700">Date *</label>
-              <input
-                className="border border-gray-200 rounded-xl p-2.5 w-full mt-1 focus:outline-none focus:ring-2 focus:ring-violet-500"
-                type="date"
-                value={form.appointmentDate}
-                onChange={e => setForm({...form, appointmentDate: e.target.value})}
-                required
-              />
+              <input className="border border-gray-200 rounded-xl p-2.5 w-full mt-1 focus:outline-none focus:ring-2 focus:ring-violet-500" type="date" value={form.appointmentDate} onChange={e => setForm({...form, appointmentDate: e.target.value})} required />
             </div>
-
             <div>
               <label className="text-sm font-medium text-gray-700">Time *</label>
-              <input
-                className="border border-gray-200 rounded-xl p-2.5 w-full mt-1 focus:outline-none focus:ring-2 focus:ring-violet-500"
-                type="time"
-                value={form.appointmentTime}
-                onChange={e => setForm({...form, appointmentTime: e.target.value})}
-                required
-              />
+              <input className="border border-gray-200 rounded-xl p-2.5 w-full mt-1 focus:outline-none focus:ring-2 focus:ring-violet-500" type="time" value={form.appointmentTime} onChange={e => setForm({...form, appointmentTime: e.target.value})} required />
             </div>
-
             <div>
               <label className="text-sm font-medium text-gray-700">Reason</label>
-              <input
-                className="border border-gray-200 rounded-xl p-2.5 w-full mt-1 focus:outline-none focus:ring-2 focus:ring-violet-500"
-                placeholder="e.g. Regular checkup"
-                value={form.reason}
-                onChange={e => setForm({...form, reason: e.target.value})}
-              />
+              <input className="border border-gray-200 rounded-xl p-2.5 w-full mt-1 focus:outline-none focus:ring-2 focus:ring-violet-500" placeholder="e.g. Regular checkup" value={form.reason} onChange={e => setForm({...form, reason: e.target.value})} />
             </div>
-
             <div>
               <label className="text-sm font-medium text-gray-700">Notes</label>
-              <input
-                className="border border-gray-200 rounded-xl p-2.5 w-full mt-1 focus:outline-none focus:ring-2 focus:ring-violet-500"
-                placeholder="Additional notes..."
-                value={form.notes}
-                onChange={e => setForm({...form, notes: e.target.value})}
-              />
+              <input className="border border-gray-200 rounded-xl p-2.5 w-full mt-1 focus:outline-none focus:ring-2 focus:ring-violet-500" placeholder="Additional notes..." value={form.notes} onChange={e => setForm({...form, notes: e.target.value})} />
             </div>
-
             <div className="col-span-2 flex gap-3 pt-2">
-              <button
-                type="submit"
-                disabled={saving}
-                className="flex items-center gap-2 bg-violet-600 text-white px-6 py-2.5 rounded-xl hover:bg-violet-700 disabled:opacity-50 font-medium transition-all"
-              >
+              <button type="submit" disabled={saving} className="flex items-center gap-2 bg-violet-600 text-white px-6 py-2.5 rounded-xl hover:bg-violet-700 disabled:opacity-50 font-medium">
                 {saving && <Loader2 className="w-4 h-4 animate-spin" />}
                 {saving ? 'Booking...' : 'Book Appointment'}
               </button>
-              <button type="button" onClick={() => setShowForm(false)} className="bg-gray-100 text-gray-600 px-6 py-2.5 rounded-xl hover:bg-gray-200 font-medium transition-all">
-                Cancel
-              </button>
+              <button type="button" onClick={() => setShowForm(false)} className="bg-gray-100 text-gray-600 px-6 py-2.5 rounded-xl hover:bg-gray-200 font-medium">Cancel</button>
             </div>
           </form>
         </div>
       )}
+
+      {/* Filter Tabs + Search */}
+      <div className="flex flex-col sm:flex-row gap-3">
+        {/* Search */}
+        <div className="relative flex-1">
+          <input
+            className="border border-gray-200 rounded-xl p-2.5 pl-4 w-full focus:outline-none focus:ring-2 focus:ring-violet-500"
+            placeholder="Search by patient or doctor name..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+          />
+        </div>
+
+        {/* Status Filter */}
+        <div className="flex gap-2 flex-wrap">
+          {['ALL', 'PENDING', 'CONFIRMED', 'COMPLETED', 'CANCELLED'].map(status => (
+            <button
+              key={status}
+              onClick={() => setFilterStatus(status)}
+              className={`px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
+                filterStatus === status
+                  ? 'bg-violet-600 text-white'
+                  : 'bg-white border border-gray-200 text-gray-500 hover:border-violet-300'
+              }`}
+            >
+              {status} ({counts[status]})
+            </button>
+          ))}
+        </div>
+      </div>
 
       {/* Table */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100">
@@ -216,11 +225,10 @@ function Appointments() {
             <Loader2 className="w-8 h-8 animate-spin text-violet-500" />
             <span className="ml-3 text-gray-500">Loading appointments...</span>
           </div>
-        ) : appointments.length === 0 ? (
+        ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-gray-300">
             <Calendar className="w-12 h-12 mb-3" />
-            <p className="text-gray-400 font-medium">No appointments yet</p>
-            <p className="text-sm text-gray-300 mt-1">Book your first appointment above</p>
+            <p className="text-gray-400 font-medium">No appointments found</p>
           </div>
         ) : (
           <table className="w-full">
@@ -235,7 +243,7 @@ function Appointments() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
-              {appointments.map(a => {
+              {filtered.map(a => {
                 const { style, dot } = statusConfig(a.status);
                 return (
                   <tr key={a.id} className="hover:bg-gray-50 transition-colors">
@@ -271,9 +279,7 @@ function Appointments() {
                           <FileText className="w-3.5 h-3.5 text-gray-300" />
                           {a.reason}
                         </div>
-                      ) : (
-                        <span className="text-gray-300 text-xs">—</span>
-                      )}
+                      ) : <span className="text-gray-300 text-xs">—</span>}
                     </td>
                     <td className="p-4">
                       <span className={`inline-flex items-center gap-1.5 text-xs px-3 py-1 rounded-full font-medium ${style}`}>
@@ -282,15 +288,35 @@ function Appointments() {
                       </span>
                     </td>
                     <td className="p-4">
-                      {a.status !== 'CANCELLED' && (
-                        <button
-                          onClick={() => handleCancel(a.id)}
-                          className="p-2 hover:bg-red-50 rounded-lg text-gray-400 hover:text-red-500 transition-colors"
-                          title="Cancel appointment"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      )}
+                      <div className="flex gap-1">
+                        {a.status === 'PENDING' && (
+                          <button
+                            onClick={() => handleStatusUpdate(a.id, 'CONFIRMED')}
+                            className="flex items-center gap-1 px-2.5 py-1.5 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 rounded-lg text-xs font-medium transition-colors"
+                            title="Confirm"
+                          >
+                            <CheckCircle className="w-3.5 h-3.5" /> Confirm
+                          </button>
+                        )}
+                        {a.status === 'CONFIRMED' && (
+                          <button
+                            onClick={() => handleStatusUpdate(a.id, 'COMPLETED')}
+                            className="flex items-center gap-1 px-2.5 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg text-xs font-medium transition-colors"
+                            title="Complete"
+                          >
+                            <Check className="w-3.5 h-3.5" /> Complete
+                          </button>
+                        )}
+                        {a.status !== 'CANCELLED' && a.status !== 'COMPLETED' && (
+                          <button
+                            onClick={() => handleCancel(a.id)}
+                            className="flex items-center gap-1 px-2.5 py-1.5 bg-red-50 text-red-500 hover:bg-red-100 rounded-lg text-xs font-medium transition-colors"
+                            title="Cancel"
+                          >
+                            <XCircle className="w-3.5 h-3.5" /> Cancel
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 );
