@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Plus, Trash2, Loader2, X, Calendar, Clock, Stethoscope, FileText, CheckCircle, XCircle, Check } from 'lucide-react';
 import toast from 'react-hot-toast';
 import API from '../api/axios';
+import { exportAppointmentsPDF } from '../utils/pdfExport';
 
 function Appointments() {
   const [appointments, setAppointments] = useState([]);
@@ -126,12 +127,20 @@ function Appointments() {
           <h1 className="text-3xl font-bold text-gray-900">Appointments</h1>
           <p className="text-gray-500 text-sm mt-1">{appointments.length} total appointments</p>
         </div>
-        <button
-          onClick={() => setShowForm(!showForm)}
-          className="flex items-center gap-2 bg-violet-600 text-white px-5 py-2.5 rounded-xl hover:bg-violet-700 shadow-sm transition-all hover:shadow-md font-medium"
-        >
-          <Plus className="w-4 h-4" /> Book Appointment
-        </button>
+       <div className="flex gap-3">
+  <button
+    onClick={() => exportAppointmentsPDF(filtered)}
+    className="flex items-center gap-2 bg-red-500 text-white px-5 py-2.5 rounded-xl hover:bg-red-600 shadow-sm font-medium"
+  >
+    📄 Export PDF
+  </button>
+  <button
+    onClick={() => setShowForm(!showForm)}
+    className="flex items-center gap-2 bg-violet-600 text-white px-5 py-2.5 rounded-xl hover:bg-violet-700 shadow-sm transition-all hover:shadow-md font-medium"
+  >
+    <Plus className="w-4 h-4" /> Book Appointment
+  </button>
+</div>
       </div>
 
       {/* Form */}

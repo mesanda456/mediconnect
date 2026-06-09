@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Plus, Search, Trash2, Loader2, Pencil, X, Users, Phone, Mail, Droplets } from 'lucide-react';
 import toast from 'react-hot-toast';
 import API from '../api/axios';
+import { exportPatientsPDF, exportPatientCardPDF } from '../utils/pdfExport';
 
 function Patients() {
   const [patients, setPatients] = useState([]);
@@ -111,18 +112,26 @@ function Patients() {
     <div className="space-y-6">
 
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Patients</h1>
-          <p className="text-gray-500 text-sm mt-1">{patients.length} total patients registered</p>
-        </div>
-        <button
-          onClick={() => { handleCancel(); setShowForm(!showForm); }}
-          className="flex items-center gap-2 bg-blue-600 text-white px-5 py-2.5 rounded-xl hover:bg-blue-700 shadow-sm transition-all hover:shadow-md font-medium"
-        >
-          <Plus className="w-4 h-4" /> Add Patient
-        </button>
-      </div>
+<div className="flex items-center justify-between">
+  <div>
+    <h1 className="text-3xl font-bold text-gray-900">Patients</h1>
+    <p className="text-gray-500 text-sm mt-1">{patients.length} total patients registered</p>
+  </div>
+  <div className="flex gap-3">
+    <button
+      onClick={() => exportPatientsPDF(filtered)}
+      className="flex items-center gap-2 bg-red-500 text-white px-5 py-2.5 rounded-xl hover:bg-red-600 shadow-sm transition-all font-medium"
+    >
+      📄 Export PDF
+    </button>
+    <button
+      onClick={() => { handleCancel(); setShowForm(!showForm); }}
+      className="flex items-center gap-2 bg-blue-600 text-white px-5 py-2.5 rounded-xl hover:bg-blue-700 shadow-sm transition-all hover:shadow-md font-medium"
+    >
+      <Plus className="w-4 h-4" /> Add Patient
+    </button>
+  </div>
+</div>
 
       {/* Form */}
       {showForm && (
@@ -322,21 +331,28 @@ function Patients() {
                     )}
                   </td>
                   <td className="p-4">
-                    <div className="flex gap-1">
-                      <button
-                        onClick={() => handleEdit(p)}
-                        className="p-2 hover:bg-blue-50 rounded-lg text-gray-400 hover:text-blue-600 transition-colors"
-                      >
-                        <Pencil className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(p.id)}
-                        className="p-2 hover:bg-red-50 rounded-lg text-gray-400 hover:text-red-600 transition-colors"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </td>
+  <div className="flex gap-1">
+    <button
+      onClick={() => exportPatientCardPDF(p)}
+      className="p-2 hover:bg-red-50 rounded-lg text-gray-400 hover:text-red-500 transition-colors"
+      title="Export PDF"
+    >
+      📄
+    </button>
+    <button
+      onClick={() => handleEdit(p)}
+      className="p-2 hover:bg-blue-50 rounded-lg text-gray-400 hover:text-blue-600 transition-colors"
+    >
+      <Pencil className="w-4 h-4" />
+    </button>
+    <button
+      onClick={() => handleDelete(p.id)}
+      className="p-2 hover:bg-red-50 rounded-lg text-gray-400 hover:text-red-600 transition-colors"
+    >
+      <Trash2 className="w-4 h-4" />
+    </button>
+  </div>
+</td>
                 </tr>
               ))}
             </tbody>

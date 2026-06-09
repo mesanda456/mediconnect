@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Plus, X, Loader2, FileText, Search, Trash2, ClipboardList, Calendar, User, Stethoscope } from 'lucide-react';
 import toast from 'react-hot-toast';
 import API from '../api/axios';
+import { exportMedicalRecordsPDF } from '../utils/pdfExport';
 
 function MedicalRecords() {
   const [records, setRecords] = useState([]);
@@ -94,12 +95,20 @@ function MedicalRecords() {
           <h1 className="text-3xl font-bold text-gray-900">Medical Records</h1>
           <p className="text-gray-500 text-sm mt-1">{records.length} total records</p>
         </div>
-        <button
-          onClick={() => setShowForm(!showForm)}
-          className="flex items-center gap-2 bg-blue-600 text-white px-5 py-2.5 rounded-xl hover:bg-blue-700 shadow-sm transition-all hover:shadow-md font-medium"
-        >
-          <Plus className="w-4 h-4" /> Add Record
-        </button>
+        <div className="flex gap-3">
+  <button
+    onClick={() => exportMedicalRecordsPDF(filtered)}
+    className="flex items-center gap-2 bg-red-500 text-white px-5 py-2.5 rounded-xl hover:bg-red-600 shadow-sm font-medium"
+  >
+    📄 Export PDF
+  </button>
+  <button
+    onClick={() => setShowForm(!showForm)}
+    className="flex items-center gap-2 bg-blue-600 text-white px-5 py-2.5 rounded-xl hover:bg-blue-700 shadow-sm transition-all hover:shadow-md font-medium"
+  >
+    <Plus className="w-4 h-4" /> Add Record
+  </button>
+</div>
       </div>
 
       {/* Form */}
