@@ -219,3 +219,54 @@ export const exportAppointmentsPDF = (appointments) => {
 
   doc.save(`appointments-${new Date().toISOString().slice(0, 10)}.pdf`);
 };
+
+// ── EXPORT DOCTORS ────────────────────────────
+export const exportDoctorsPDF = (doctors) => {
+  const doc = new jsPDF();
+
+  // Header
+  doc.setFillColor(5, 150, 105);
+  doc.rect(0, 0, 210, 30, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(20);
+  doc.setFont('helvetica', 'bold');
+  doc.text('MediConnect', 14, 15);
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'normal');
+  doc.text('Doctors Report', 14, 23);
+  doc.text(`Generated: ${new Date().toLocaleDateString()}`, 150, 23);
+
+  autoTable(doc, {
+    startY: 40,
+    head: [['#', 'Full Name', 'Email', 'Phone', 'Specialty', 'Experience', 'Fee', 'Available']],
+    body: doctors.map((d, i) => [
+      i + 1,
+      d.fullName || '—',
+      d.email || '—',
+      d.phone || '—',
+      d.specialty || '—',
+      d.experienceYears ? `${d.experienceYears} yrs` : '—',
+      d.consultationFee ? `Rs. ${d.consultationFee}` : '—',
+      d.available ? 'Yes' : 'No',
+    ]),
+    headStyles: {
+      fillColor: [5, 150, 105],
+      textColor: 255,
+      fontStyle: 'bold',
+      fontSize: 9,
+    },
+    bodyStyles: { fontSize: 8 },
+    alternateRowStyles: { fillColor: [236, 253, 245] },
+    margin: { left: 14, right: 14 },
+  });
+
+  const pageCount = doc.internal.getNumberOfPages();
+  for (let i = 1; i <= pageCount; i++) {
+    doc.setPage(i);
+    doc.setFontSize(8);
+    doc.setTextColor(150);
+    doc.text(`Page ${i} of ${pageCount} — MediConnect Doctors Report`, 14, doc.internal.pageSize.height - 10);
+  }
+
+  doc.save(`mediconnect-doctors-${new Date().toISOString().slice(0, 10)}.pdf`);
+};
