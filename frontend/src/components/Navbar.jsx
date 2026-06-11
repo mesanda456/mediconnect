@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Heart, Users, UserCheck, Calendar, LogOut, FileText } from 'lucide-react';
+import { Heart, Users, UserCheck, Calendar, LogOut, FileText, Settings } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 
@@ -46,6 +46,15 @@ function Navbar() {
           </div>
           <div className="flex items-center gap-3">
             <span className="text-sm text-blue-200">👤 {user?.email}</span>
+            <Link
+              to="/settings"
+              className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
+                location.pathname === '/settings' ? 'bg-blue-800' : 'hover:bg-blue-700'
+              }`}
+            >
+              <Settings className="w-4 h-4" />
+              Settings
+            </Link>
             <button
               onClick={handleLogout}
               className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-blue-700 text-sm"

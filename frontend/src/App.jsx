@@ -8,6 +8,7 @@ import Appointments from './pages/Appointments';
 import Login from './pages/Login';
 import Navbar from './components/Navbar';
 import MedicalRecords from './pages/MedicalRecords';
+import Settings from './pages/Settings';
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
                     <Route path="/doctors" element={<Doctors />} />
                     <Route path="/appointments" element={<Appointments />} />
                     <Route path="/medical-records" element={<MedicalRecords />} />
+                    <Route path="/settings" element={<Settings />} />
                   </Routes>
                 </div>
               </div>
