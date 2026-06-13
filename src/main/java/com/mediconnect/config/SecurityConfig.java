@@ -8,11 +8,13 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import java.util.List;
 
 @Configuration
 @EnableWebSecurity
-public class SecurityConfig {
+public class SecurityConfig implements WebMvcConfigurer {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -35,5 +37,17 @@ public class SecurityConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
         return source;
+    }
+
+    // ─── Serve uploaded avatars and record files statically ───
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        String projectRoot = System.getProperty("user.dir");
+
+        registry.addResourceHandler("/avatars/**")
+                .addResourceLocations("file:" + projectRoot + "/uploads/avatars/");
+
+        registry.addResourceHandler("/records/**")
+                .addResourceLocations("file:" + projectRoot + "/uploads/records/");
     }
 }

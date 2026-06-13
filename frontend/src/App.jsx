@@ -18,9 +18,9 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/*" element={
             <ProtectedRoute>
-              <div className="min-h-screen bg-gray-50">
-                <Navbar />
-                <div className="max-w-7xl mx-auto px-4 py-6">
+              <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
+  <Navbar />
+  <div className="max-w-7xl mx-auto px-4 py-6">
                   <Routes>
                     <Route path="/" element={<Dashboard />} />
                     <Route path="/patients" element={<Patients />} />

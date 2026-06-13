@@ -68,13 +68,19 @@ public class AuthController {
 
         if (avatar != null && !avatar.isEmpty()) {
             try {
-                String uploadsDir = "uploads/avatars/";
+                // Use absolute path based on project root
+                String projectRoot = System.getProperty("user.dir");
+                String uploadsDir = projectRoot + "/uploads/avatars/";
                 new File(uploadsDir).mkdirs();
+
                 String filename = UUID.randomUUID() + "_" + avatar.getOriginalFilename();
-                avatar.transferTo(new File(uploadsDir + filename));
+                File dest = new File(uploadsDir + filename);
+                avatar.transferTo(dest.getAbsoluteFile());
+
                 user.setAvatar("/avatars/" + filename);
             } catch (IOException e) {
-                return ResponseEntity.status(500).body(Map.of("error", "Avatar upload failed"));
+                e.printStackTrace();
+                return ResponseEntity.status(500).body(Map.of("error", "Avatar upload failed: " + e.getMessage()));
             }
         }
 
