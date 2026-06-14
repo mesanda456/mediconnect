@@ -9,13 +9,14 @@ import Login from './pages/Login';
 import Navbar from './components/Navbar';
 import MedicalRecords from './pages/MedicalRecords';
 import Settings from './pages/Settings';
-
+import AISymptomAnalyzer from './pages/AISymptomAnalyzer';
 function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<Login />} />
+          <Route path="/ai-analyzer" element={<AISymptomAnalyzer />} />
           <Route path="/*" element={
             <ProtectedRoute>
               <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">

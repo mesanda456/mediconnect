@@ -4,6 +4,7 @@ import { Heart, Users, UserCheck, Calendar, LogOut, FileText, Settings, Bell } f
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 import API from '../api/axios';
+import { Brain } from 'lucide-react';
 
 function Navbar() {
   const location = useLocation();
@@ -20,6 +21,7 @@ function Navbar() {
     { to: '/doctors', label: 'Doctors', icon: UserCheck },
     { to: '/appointments', label: 'Appointments', icon: Calendar },
     { to: '/medical-records', label: 'Records', icon: FileText },
+    { to: '/ai-analyzer', label: 'AI Analyzer', icon: Brain },
   ];
 
   const handleLogout = () => {
