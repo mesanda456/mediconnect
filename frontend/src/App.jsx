@@ -10,6 +10,10 @@ import Navbar from './components/Navbar';
 import MedicalRecords from './pages/MedicalRecords';
 import Settings from './pages/Settings';
 import AISymptomAnalyzer from './pages/AISymptomAnalyzer';
+import QueueDisplay from './pages/QueueDisplay';
+import QueueManager from './pages/QueueManager';
+
+
 function App() {
   return (
     <AuthProvider>
@@ -29,6 +33,8 @@ function App() {
                     <Route path="/appointments" element={<Appointments />} />
                     <Route path="/medical-records" element={<MedicalRecords />} />
                     <Route path="/settings" element={<Settings />} />
+                    <Route path="/queue-display" element={<QueueDisplay />} />
+<Route path="/queue-manager" element={<QueueManager />} />
                   </Routes>
                 </div>
               </div>
