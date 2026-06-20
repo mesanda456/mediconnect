@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
-import { Brain, Loader2, User, AlertTriangle, CheckCircle, Info, Save, ChevronDown, Stethoscope, FileText } from 'lucide-react';
+import { Brain, Loader2, User, AlertTriangle, CheckCircle, Info, Save, ChevronDown, Stethoscope, FileText, ArrowLeft } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import API from '../api/axios';
 
 export default function AISymptomAnalyzer() {
+  const navigate = useNavigate();
   const [patients, setPatients] = useState([]);
   const [doctors, setDoctors] = useState([]);
   const [selectedPatient, setSelectedPatient] = useState('');
@@ -72,7 +74,6 @@ Please provide your response in the following JSON format only, no extra text:
   "disclaimer": "This is an AI-assisted analysis and should not replace professional medical judgment."
 }`;
 
-      // ← Now calls backend instead of Anthropic directly
       const response = await API.post('/ai/analyze', { prompt });
       const data = response.data;
       const text = data.content[0].text;
@@ -150,14 +151,22 @@ ${result.disclaimer}`;
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-violet-500 to-blue-600 rounded-xl flex items-center justify-center">
-              <Brain className="w-5 h-5 text-white" />
-            </div>
-            AI Symptom Analyzer
-          </h1>
-          <p className="text-gray-500 text-sm mt-1">Powered by Claude AI — Enter symptoms to get an instant medical analysis</p>
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => navigate('/')}
+            className="flex items-center justify-center w-9 h-9 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors shadow-sm"
+          >
+            <ArrowLeft className="w-4 h-4 text-gray-500" />
+          </button>
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-violet-500 to-blue-600 rounded-xl flex items-center justify-center">
+                <Brain className="w-5 h-5 text-white" />
+              </div>
+              AI Symptom Analyzer
+            </h1>
+            <p className="text-gray-500 text-sm mt-1">Powered by Gemini AI — Enter symptoms to get an instant medical analysis</p>
+          </div>
         </div>
         <div className="flex items-center gap-2 bg-violet-50 border border-violet-100 rounded-xl px-4 py-2">
           <div className="w-2 h-2 bg-violet-500 rounded-full animate-pulse" />

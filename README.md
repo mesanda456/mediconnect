@@ -1,6 +1,6 @@
 # 🏥 MediConnect — Smart Hospital Management System
 
-> A full-stack hospital management system built with React + Spring Boot + MySQL, featuring AI-powered symptom analysis.
+> A full-stack hospital management system built with React + Spring Boot + MySQL, featuring AI-powered symptom analysis and a live patient queue.
 
 ![Status](https://img.shields.io/badge/Status-Live-brightgreen)
 ![Backend](https://img.shields.io/badge/Backend-Spring%20Boot-green)
@@ -51,6 +51,13 @@
 - Returns possible diagnoses with probability levels
 - Severity assessment, recommended tests, immediate actions
 - Save analysis directly to medical records
+
+### 🎫 Live Token Queue System *(Unique Feature)*
+- Real-time patient queue generated from today's appointments
+- Admin control panel — call next, mark done, skip, reset
+- Dedicated live display screen for waiting room TVs/monitors
+- Auto-refreshes every 5 seconds, no page reload needed
+- Per-doctor queues with token numbers
 
 ### 🔔 Smart Notifications
 - Bell icon with live count badge
@@ -165,6 +172,17 @@ DELETE /api/medical-records/{id} → Delete record
 POST   /api/ai/analyze           → Analyze symptoms with Gemini AI
 ```
 
+### Queue
+```
+GET    /api/queue/today                  → Today's full queue
+GET    /api/queue/today/doctor/{id}      → Today's queue for a doctor
+POST   /api/queue/generate               → Generate queue from today's appointments
+POST   /api/queue/next                   → Call next patient
+POST   /api/queue/{id}/complete          → Mark patient as done
+POST   /api/queue/{id}/skip              → Skip patient
+DELETE /api/queue/reset                  → Reset doctor's queue
+```
+
 ---
 
 ## 📁 Project Structure
@@ -174,7 +192,8 @@ mediconnect/
 ├── frontend/                  ← React app (Vite + Tailwind)
 │   └── src/
 │       ├── pages/             ← Dashboard, Patients, Doctors, Appointments,
-│       │                         MedicalRecords, Settings, AISymptomAnalyzer
+│       │                         MedicalRecords, Settings, AISymptomAnalyzer,
+│       │                         QueueManager, QueueDisplay
 │       ├── components/        ← Navbar, ProtectedRoute
 │       ├── context/           ← AuthContext
 │       └── api/               ← axios config
